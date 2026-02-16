@@ -35,7 +35,8 @@ dependencies:
   http: ^1.0.0 # Used for making requests (pdf downloading)
   path_provider: ^2.0.0 # Used for saving downloaded files into tmp folder
   path: ^1.0.0 # Platform independent path construction
-  syncfusion_flutter_pdfviewer: ^32.0.0
+  syncfusion_flutter_pdfviewer: ^32.0.0 # Cross platform
+  pdf_image_renderer: ^1.0.1  # For rendering images from PDF pages iOS/Android
   xml: ^6.0.0 # Opens fb2 files
   epub_view: ^3.2.0 # Simple support for epub files
   archive: ^3.6.1 # For extracting epub book cover

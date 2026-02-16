@@ -1,8 +1,10 @@
-import 'package:logger/logger.dart';
-import 'package:xml/xml.dart';
-import 'package:flutter/services.dart'; // For reading local files
 import 'dart:io'; // For handling file operations
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
+import 'package:pdf_image_renderer/pdf_image_renderer.dart';
+import 'package:xml/xml.dart';
+import 'package:flutter/services.dart'; // For reading local files
 import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
 
@@ -20,7 +22,7 @@ class CoverExtractor {
       case 'fb2':
         return await _extractFromFb2(filePath);
       case 'pdf':
-        // return await _extractFromPdf(filePath);
+        return await _extractFromPdf(filePath);
       case 'epub':
         return await _extractFromEpub(filePath);
       default:
@@ -46,6 +48,48 @@ class CoverExtractor {
       return image.buffer.asUint8List();
     } catch (e) {
       logger.w('Error extracting FB2 cover image: $e');
+    }
+    return null;
+  }
+
+  // Extract cover from PDF file using pdf_image_renderer
+  Future<Uint8List?> _extractFromPdf(String filePath) async {
+    try {
+      // Initialize the renderer
+      final pdf = PdfImageRenderer(path: filePath);
+
+      // open the pdf document
+      await pdf.open(
+        // password: 'password', // optional (iOS and Android 15.0+ support - ignored otherwise)
+      );
+
+      // open a page from the pdf document using the page index
+      await pdf.openPage(pageIndex: 0);
+
+      // get the render size after the page is loaded
+      final size = await pdf.getPageSize(pageIndex: 0);
+
+      // get the actual image of the page
+      final img = await pdf.renderPage(
+        pageIndex: 0,
+        x: 0,
+        y: 0,
+        width: size.width, // you can pass a custom size here to crop the image
+        height:
+            size.height, // you can pass a custom size here to crop the image
+        scale: 1, // increase the scale for better quality (e.g. for zooming)
+        background: Colors.white,
+      );
+
+      // close the page again
+      await pdf.closePage(pageIndex: 0);
+
+      // close the PDF after rendering the page
+      pdf.close();
+
+      return img;
+    } catch (e) {
+      logger.w('Error extracting PDF cover image: $e');
     }
     return null;
   }
