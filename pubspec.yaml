@@ -30,6 +30,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  file_picker: ^10.0.0  
+  logger: ^2.0.0        
+  http: ^1.0.0 # Used for making requests (pdf downloading)
+  path_provider: ^2.0.0 # Used for saving downloaded files into tmp folder
+  path: ^1.0.0 # Platform independent path construction
+  syncfusion_flutter_pdfviewer: ^32.0.0
+  xml: ^6.0.0 # Opens fb2 files
+  epub_view: ^3.2.0 # Simple support for epub files
+  archive: ^3.6.1 # For extracting epub book cover
+  hive: ^2.0.0 # Local key-value storage
+  hive_flutter: ^1.0.0 # Binary hive reader
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

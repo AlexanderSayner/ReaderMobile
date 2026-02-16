@@ -1,7 +1,25 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+import 'package:hive_flutter/hive_flutter.dart';
 import 'view/home_page.dart';
 
-void main() {
+final String appFolderName = 'FlutterReader';
+
+void main()async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final documents = await getApplicationDocumentsDirectory();
+  final customDir = Directory(p.join(documents.path, appFolderName));
+  if (!await customDir.exists()) {
+    await customDir.create(recursive: true);
+  }
+
+  await Hive.initFlutter(
+    customDir.path,
+  ); // Initialize Hive with the app's document directory
+
   runApp(const MyApp());
 }
 
