@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:reader_mobile/view/bookshelf_screen.dart';
+import '../repository/database_helper.dart';
 
 var logger = Logger(printer: PrettyPrinter());
 
@@ -25,6 +26,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   bool _isLoading = false; // Loading indicator for a file upload
+  final DatabaseHelper dbHelper = DatabaseHelper();
 
   Future<void> _pickFile() async {
     setLoadingState(true);
@@ -40,6 +42,14 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     setLoadingState(false);
+
+    if (result != null) {
+      String filePath = result.files.single.path!;
+      logger.i('Opened file: $filePath');
+      await dbHelper.addFilePath(filePath);
+    } else {
+      logger.i('Canceled file dialog');
+    }
   }
 
   void setLoadingState(bool isLoading) {
