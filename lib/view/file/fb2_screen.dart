@@ -44,7 +44,7 @@ class _Fb2ViewerScreenState extends State<Fb2ViewerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('FB2 viewer screen')),
+      //appBar: AppBar(title: const Text('FB2 viewer screen')),
       body: _body != null
           ? Column(
               children: [

@@ -6,10 +6,11 @@ import 'package:reader_mobile/repository/database_helper.dart';
 import 'package:reader_mobile/view/file/epub_screen.dart';
 import 'package:reader_mobile/view/file/pdf_screen.dart';
 import 'package:reader_mobile/view/file/fb2_screen.dart';
+import 'package:reader_mobile/view/reader/unified_reader_screen.dart';
 
 var logger = Logger(printer: PrettyPrinter());
 var dbHelper = DatabaseHelper();
-
+/*
 Future<void> openFile({
   required BuildContext context,
   required String filePath,
@@ -44,6 +45,25 @@ Future<void> openFile({
         SnackBar(content: Text('Unsupported file type: $fileExtension')),
       );
   }
+}
+*/
+
+ Future<void> openFile({
+  required BuildContext context,
+  required String filePath,
+}) async {
+  String fileExtension = p.extension(filePath);
+  logger.i('Opening file: $filePath as $fileExtension type');
+
+  // Always use the unified reader wrapper regardless of file type
+  navigateToScreen(
+    context: context,
+    screenBuilder: (path) => UnifiedReaderWrapper(
+      filePath: path,
+      fileType: fileExtension,
+    ),
+    arguments: filePath,
+  );
 }
 
 void navigateToScreen<T>({

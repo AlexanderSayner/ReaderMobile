@@ -61,7 +61,7 @@ class _PdfViewerScreenState extends State<PdfNetViewerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Viewer screen for pdf files')),
+      //appBar: AppBar(title: const Text('Viewer screen for pdf files')),
       body: _errorMessage != null
           ? Center(
               child: Text(_errorMessage!, style: TextStyle(color: Colors.red)),
