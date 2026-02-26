@@ -8,7 +8,7 @@ import 'view/home_page.dart';
 
 final String appFolderName = 'FlutterReader';
 
-void main()async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final documents = await getApplicationDocumentsDirectory();
   final customDir = Directory(p.join(documents.path, appFolderName));

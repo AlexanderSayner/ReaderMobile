@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:logger/logger.dart';
+import 'package:reader_mobile/utils/file_utils.dart' as file_utils;
 import 'package:reader_mobile/view/bookshelf_screen.dart';
 import '../repository/database_helper.dart';
 
@@ -25,9 +25,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool _isLoading = false; // Loading indicator for a file upload
+  final ValueNotifier<bool> _isLoading = ValueNotifier<bool>(
+    false,
+  ); // Loading indicator for a file upload
   final DatabaseHelper dbHelper = DatabaseHelper();
-
+  /*
   Future<void> _pickFile() async {
     setLoadingState(true);
 
@@ -57,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _isLoading = isLoading;
     });
   }
-
+*/
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -72,10 +74,22 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Column(children: [Expanded(child: BookshelfScreen())]),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _pickFile,
-        tooltip: 'Upload a file',
-        child: _isLoading ? CircularProgressIndicator() : Icon(Icons.download),
+      floatingActionButton: ValueListenableBuilder<bool>(
+        valueListenable: _isLoading,
+        builder: (context, isLoading, child) {
+          return FloatingActionButton(
+            onPressed: isLoading
+                ? null
+                : () => file_utils.pickAndUploadFile(
+                    context: context,
+                    isLoading: _isLoading,
+                  ),
+            tooltip: 'Upload a file',
+            child: isLoading
+                ? CircularProgressIndicator()
+                : Icon(Icons.download),
+          );
+        },
       ),
     );
   }

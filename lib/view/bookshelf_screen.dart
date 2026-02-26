@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path/path.dart' as p;
 import 'package:logger/logger.dart';
 import 'package:reader_mobile/helper/cover_extractor.dart';
 import 'package:reader_mobile/repository/database_helper.dart';
-import 'package:reader_mobile/view/file/epub_screen.dart';
-import 'package:reader_mobile/view/file/pdf_screen.dart';
-import 'package:reader_mobile/view/file/fb2_screen.dart';
+import 'package:reader_mobile/utils/file_utils.dart' as file_utils;
+import 'package:reader_mobile/view/upload_screen.dart';
+import 'package:reader_mobile/widget/book_carousel.dart';
+import 'package:reader_mobile/utils/file_utils.dart';
 
 var logger = Logger(printer: PrettyPrinter());
 
@@ -44,6 +44,7 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
     });
   }
 
+  /*
   void openFile(String filePath) {
     String fileExtension = p.extension(filePath);
     logger.i('Opening file: $filePath as $fileExtension type');
@@ -88,7 +89,7 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
       context,
     ).push(MaterialPageRoute(builder: (context) => screenBuilder(arguments)));
   }
-
+*/
   void removeFile(int index) {
     logger.i('Removing file: $index');
     dbHelper.deleteFilePath(index);
@@ -97,9 +98,9 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Bookshelf')),
+      //appBar: AppBar(title: const Text('Bookshelf')),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : ValueListenableBuilder(
               valueListenable: _box
                   .listenable(), // Listen to changes in the box
@@ -109,65 +110,129 @@ class _BookshelfScreenState extends State<BookshelfScreen> {
                     .toList(); // Get the current file paths
 
                 return filePaths.isEmpty
-                    ? Center(child: Text("No local data"))
-                    : ListView.builder(
-                        itemCount: filePaths.length,
-                        itemBuilder: (context, index) {
-                          String filePath = filePaths[index];
-                          String fileName = filePath
-                              .split('/')
-                              .last; // Extract filename
-
-                          final coverExtractor = CoverExtractor();
-
-                          return ListTile(
-                            leading: FutureBuilder(
-                              future: coverExtractor.extractCover(filePath),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return SizedBox(
-                                    width: 50,
-                                    height: 75,
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                } else if (snapshot.hasData &&
-                                    snapshot.data != null) {
-                                  return Image.memory(
-                                    snapshot.data!,
-                                    width: 50,
-                                    height: 75,
-                                    fit: BoxFit.cover,
-                                  );
-                                } else {
-                                  return Container(
-                                    width: 50,
-                                    height: 75,
-                                    color: Colors.amberAccent,
-                                    child: Center(child: Icon(Icons.book)),
-                                  );
-                                }
-                              },
-                            ),
-                            title: Text(fileName),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
+                    ? const Center(child: Text("No local data"))
+                    : Column(
+                        children: [
+                          const Divider(),
+                          SizedBox(
+                            height: 154, // Set a fixed height for the row
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment
+                                  .start, // Align items to the start of the row
                               children: [
-                                ElevatedButton(
-                                  onPressed: () => openFile(filePath),
-                                  child: Text('Open'),
+                                // Settings and download button column
+                                Container(
+                                  width: 40, // Fixed width for the left column
+                                  color: Colors.grey[200],
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment
+                                        .start, // Align buttons to the start
+                                    children: [
+                                      // Settings button
+                                      IconButton(
+                                        icon: const Icon(Icons.settings),
+                                        onPressed: () {
+                                          // Handle settings button press
+                                        },
+                                      ),
+                                      // Download button
+                                      IconButton(
+                                        icon: const Icon(Icons.download),
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const UploadScreen(),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                SizedBox(width: 5),
-                                ElevatedButton(
-                                  onPressed: () => removeFile(index),
-                                  child: Text('Remove'),
+                                // Book carousel
+                                Expanded(
+                                  child: BookCarousel(
+                                    box: box,
+                                    onBookTap: (filePath) => file_utils.openFile(
+                                      context: context,
+                                      filePath: filePath,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
-                          );
-                        },
+                          ),
+                          const Divider(),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: filePaths.length,
+                              itemBuilder: (context, index) {
+                                String filePath = filePaths[index];
+                                String fileName = filePath
+                                    .split('/')
+                                    .last; // Extract filename
+
+                                final coverExtractor = CoverExtractor();
+
+                                return ListTile(
+                                  leading: FutureBuilder(
+                                    future: coverExtractor.extractCover(
+                                      filePath,
+                                    ),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return const SizedBox(
+                                          width: 50,
+                                          height: 75,
+                                          child: Center(
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                        );
+                                      } else if (snapshot.hasData &&
+                                          snapshot.data != null) {
+                                        return Image.memory(
+                                          snapshot.data!,
+                                          width: 50,
+                                          height: 75,
+                                          fit: BoxFit.cover,
+                                        );
+                                      } else {
+                                        return Container(
+                                          width: 50,
+                                          height: 75,
+                                          color: Colors.amberAccent,
+                                          child: const Center(
+                                            child: Icon(Icons.book),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                  title: Text(fileName),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () => openFile(
+                                          context: context,
+                                          filePath: filePath,
+                                        ),
+                                        child: const Text('Open'),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      ElevatedButton(
+                                        onPressed: () => removeFile(index),
+                                        child: const Text('Remove'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       );
               },
             ),
